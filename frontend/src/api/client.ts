@@ -53,6 +53,7 @@ export const api = {
   },
   stream: {
     proxyUrl: (url: string) => `/api/stream/proxy?url=${encodeURIComponent(url)}`,
+    downloadUrl: (url: string) => `/api/stream/download?url=${encodeURIComponent(url)}`,
     getHistory: () =>
       request<
         {
@@ -81,6 +82,15 @@ export const api = {
           progress,
           total_duration,
         }),
+      }),
+  },
+  preferences: {
+    get: () =>
+      request<{ default_quality: number; default_mode: string }>("/preferences"),
+    update: (data: { default_quality?: number; default_mode?: string }) =>
+      request<{ default_quality: number; default_mode: string }>("/preferences", {
+        method: "PUT",
+        body: JSON.stringify(data),
       }),
   },
 };

@@ -41,6 +41,54 @@ def _stream_url(url: str, range_header: str):
         yield chunk
 
 
+@router.get("/download")
+async def download_video(url: str):
+    import asyncio
+    from urllib.request import Request as UrllibRequest, urlopen
+    import ssl
+
+    ssl_ctx = ssl.create_default_context()
+    ssl_ctx.check_hostname = False
+    ssl_ctx.verify_mode = ssl.CERT_NONE
+
+    def open_stream():
+        headers = {
+            "User-Agent": USER_AGENT,
+            "Referer": "https://youtu-chan.com/",
+        }
+        req = UrllibRequest(url, headers=headers)
+        return urlopen(req, timeout=60, context=ssl_ctx)
+
+    loop = asyncio.get_event_loop()
+    try:
+        resp = await loop.run_in_executor(None, open_stream)
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"Download error: {str(e)}")
+
+    content_type = resp.headers.get("Content-Type", "video/mp4")
+    content_length = resp.headers.get("Content-Length")
+
+    async def iterate():
+        try:
+            while True:
+                chunk = await loop.run_in_executor(None, resp.read, CHUNK_SIZE)
+                if not chunk:
+                    break
+                yield chunk
+        finally:
+            resp.close()
+
+    return StreamingResponse(
+        iterate(),
+        headers={
+            "Content-Type": content_type,
+            **({"Content-Length": content_length} if content_length else {}),
+            "Content-Disposition": 'attachment; filename="anime-episode.mp4"',
+            "Access-Control-Allow-Origin": "*",
+        },
+    )
+
+
 @router.get("/proxy")
 async def proxy_video(url: str, request: Request):
     import asyncio

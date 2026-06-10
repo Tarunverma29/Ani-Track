@@ -22,5 +22,5 @@ async def get_db():
 
 async def init_db():
     async with engine.begin() as conn:
-        from app.models import user, history
+        from app.models import user, history, preferences
         await conn.run_sync(Base.metadata.create_all)

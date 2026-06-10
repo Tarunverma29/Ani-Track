@@ -6,6 +6,7 @@ import SearchPage from "./pages/SearchPage";
 import AnimePage from "./pages/AnimePage";
 import WatchPage from "./pages/WatchPage";
 import HistoryPage from "./pages/HistoryPage";
+import SettingsPage from "./pages/SettingsPage";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -44,6 +45,9 @@ export default function App() {
           <Link to="/history" className="text-sm text-gray-400 hover:text-gray-200">
             History
           </Link>
+          <Link to="/settings" className="text-sm text-gray-400 hover:text-gray-200">
+            Settings
+          </Link>
         </div>
         <div className="flex items-center gap-3">
           <span className="text-sm text-gray-500">{user.username}</span>
@@ -62,6 +66,7 @@ export default function App() {
           <Route path="/anime/:id" element={<AnimePage />} />
           <Route path="/watch/:id/:episode" element={<WatchPage />} />
           <Route path="/history" element={<HistoryPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>

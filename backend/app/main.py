@@ -8,6 +8,7 @@ from app.database import init_db
 from app.auth.routes import router as auth_router
 from app.routers.anime import router as anime_router
 from app.routers.stream import router as stream_router
+from app.routers.preferences import router as preferences_router
 
 
 @asynccontextmanager
@@ -29,6 +30,7 @@ app.add_middleware(
 app.include_router(auth_router)
 app.include_router(anime_router)
 app.include_router(stream_router)
+app.include_router(preferences_router)
 
 
 @app.get("/api/health")

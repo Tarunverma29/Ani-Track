@@ -32,3 +32,8 @@ export interface HistoryEntry {
   total_duration: number;
   last_watched: string;
 }
+
+export interface UserPreferences {
+  default_quality: number;
+  default_mode: string;
+}
