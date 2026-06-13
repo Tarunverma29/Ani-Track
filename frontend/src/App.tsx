@@ -1,7 +1,6 @@
 import { Routes, Route, Navigate, Link, useLocation } from "react-router-dom";
 import { useAuth } from "./hooks/useAuth";
-import LoginPage from "./pages/LoginPage";
-import RegisterPage from "./pages/RegisterPage";
+import AuthPage from "./pages/AuthPage";
 import SearchPage from "./pages/SearchPage";
 import AnimePage from "./pages/AnimePage";
 import WatchPage from "./pages/WatchPage";
@@ -48,9 +47,7 @@ export default function App() {
     return (
       <div style={{ background: "#090b0e", minHeight: "100vh" }}>
         <Routes>
-          <Route path="/login" element={<LoginPage onLogin={login} />} />
-          <Route path="/register" element={<RegisterPage onRegister={register} />} />
-          <Route path="*" element={<Navigate to="/login" replace />} />
+          <Route path="*" element={<AuthPage onLogin={login} onRegister={register} />} />
         </Routes>
       </div>
     );
