@@ -84,6 +84,38 @@ export const api = {
         }),
       }),
   },
+  library: {
+    list: (statusFilter?: string) => {
+      const params = statusFilter && statusFilter !== "all" ? `?status_filter=${statusFilter}` : "";
+      return request<import("../types").LibraryEntry[]>(`/library${params}`);
+    },
+    add: (data: {
+      anime_id: string;
+      anime_title: string;
+      anime_title_jp?: string;
+      total_episodes?: number;
+      genre?: string;
+      year?: number | null;
+      studio?: string;
+      synopsis?: string;
+      image?: string;
+      banner?: string;
+      type?: string;
+      duration?: string;
+      season?: string;
+      status?: string;
+    }) => request<import("../types").LibraryEntry>("/library", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+    update: (id: number, data: { episodes_watched?: number; status?: string; user_score?: number | null }) =>
+      request<import("../types").LibraryEntry>(`/library/${id}`, {
+        method: "PUT",
+        body: JSON.stringify(data),
+      }),
+    remove: (id: number) => request<{ status: string }>(`/library/${id}`, { method: "DELETE" }),
+    stats: () => request<import("../types").LibraryStats>("/library/stats"),
+  },
   preferences: {
     get: () =>
       request<{ default_quality: number; default_mode: string }>("/preferences"),

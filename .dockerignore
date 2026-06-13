@@ -1,0 +1,10 @@
+node_modules
+__pycache__
+*.pyc
+.git
+*.db
+/data
+dist
+.env
+**/__pycache__
+**/*.pyc

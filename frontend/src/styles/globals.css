@@ -1,0 +1,31 @@
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #1e2738 transparent;
+  box-sizing: border-box;
+}
+
+*::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: #1e2738;
+  border-radius: 0;
+}
+
+html, body, #root {
+  height: 100%;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+}
+
+::selection {
+  background: rgba(184, 48, 64, 0.3);
+  color: #e0e8f0;
+}
