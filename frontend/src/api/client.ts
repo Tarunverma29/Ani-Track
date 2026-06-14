@@ -47,13 +47,21 @@ export const api = {
     episodes: (id: string, mode = "sub") =>
       request<{ episodes: string[] }>(`/anime/episodes?id=${id}&mode=${mode}`),
     sources: (id: string, episode: string, mode = "sub") =>
-      request<{ links: Record<number, string> }>(
+      request<{ links: Record<number, string>; referrers: Record<number, string | null> }>(
         `/anime/sources?id=${id}&episode=${episode}&mode=${mode}`
       ),
   },
   stream: {
-    proxyUrl: (url: string) => `/api/stream/proxy?url=${encodeURIComponent(url)}`,
-    downloadUrl: (url: string) => `/api/stream/download?url=${encodeURIComponent(url)}`,
+    proxyUrl: (url: string, ref?: string) => {
+      let path = `/api/stream/proxy?url=${encodeURIComponent(url)}`;
+      if (ref) path += `&ref=${encodeURIComponent(ref)}`;
+      return path;
+    },
+    downloadUrl: (url: string, ref?: string) => {
+      let path = `/api/stream/download?url=${encodeURIComponent(url)}`;
+      if (ref) path += `&ref=${encodeURIComponent(ref)}`;
+      return path;
+    },
     getHistory: () =>
       request<
         {

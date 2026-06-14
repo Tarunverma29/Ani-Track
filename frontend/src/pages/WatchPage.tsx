@@ -50,17 +50,20 @@ export default function WatchPage() {
     })();
   }, [id, title, episodes.length]);
 
+  const referrersRef = useRef<Record<number, string | null>>({});
+
   useEffect(() => {
     if (!id || !episode) return;
     setLoading(true); setShowEndOverlay(false); setCountdown(10);
     api.anime.sources(id, episode, mode).then((data) => {
       const rawLinks = data.links;
+      referrersRef.current = data.referrers || {};
       setLinks(rawLinks);
       const qs = Object.keys(rawLinks).map(Number).sort((a, b) => b - a);
       setQualities(qs);
       const best = qs[0] || 0;
       setSelectedQuality(best);
-      setVideoUrl(api.stream.proxyUrl(rawLinks[best]));
+      setVideoUrl(api.stream.proxyUrl(rawLinks[best], referrersRef.current[best] || undefined));
     }).catch(() => {}).finally(() => setLoading(false));
   }, [id, episode, mode]);
 
@@ -108,16 +111,17 @@ export default function WatchPage() {
     video.src = videoUrl;
     video.load();
 
-    // Restore progress
-    (async () => {
+    // Restore progress once metadata is loaded so duration is available
+    const onLoaded = async () => {
       try {
         const entries = await api.stream.getHistory();
         const entry = entries.find((e) => e.anime_id === id && e.episode === episode);
-        if (entry && entry.progress > 1 && video.duration) {
+        if (entry && entry.progress > 1) {
           video.currentTime = entry.progress;
         }
       } catch {}
-    })();
+    };
+    video.addEventListener("loadedmetadata", onLoaded, { once: true });
 
     // Save on timeupdate (throttled to ~5s)
     const onTimeupdate = () => {
@@ -159,12 +163,16 @@ export default function WatchPage() {
     return () => {
       video.removeEventListener("timeupdate", onTimeupdate);
       video.removeEventListener("ended", onEnded);
+      video.removeEventListener("loadedmetadata", onLoaded);
       clearInterval(interval);
       if (countdownRef.current) clearInterval(countdownRef.current);
     };
   }, [videoUrl]);
 
-  function changeQuality(q: number) { setSelectedQuality(q); if (links[q]) setVideoUrl(api.stream.proxyUrl(links[q])); }
+  function changeQuality(q: number) {
+    setSelectedQuality(q);
+    if (links[q]) setVideoUrl(api.stream.proxyUrl(links[q], referrersRef.current[q] || undefined));
+  }
 
   if (loading) return (
     <div className="flex items-center justify-center" style={{ minHeight: "60vh", fontFamily: "'JetBrains Mono', monospace", color: "#4a5a6e", fontSize: "0.75rem" }}>
@@ -197,7 +205,7 @@ export default function WatchPage() {
         <div className="flex-1" />
         <div className="flex items-center gap-4">
           {links[selectedQuality] && (
-            <a href={api.stream.downloadUrl(links[selectedQuality])}
+            <a href={api.stream.downloadUrl(links[selectedQuality], referrersRef.current[selectedQuality] || undefined)}
               className="flex items-center gap-1.5 no-underline"
               style={{ fontFamily: "'JetBrains Mono', monospace", color: "#4a5a6e", fontSize: "0.7rem" }}>
               <Download size={14} /> download

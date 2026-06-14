@@ -1,8 +1,7 @@
-from typing import Any, AsyncGenerator
 from urllib.request import Request as UrllibRequest, urlopen
 import ssl
 
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request, Query
 from fastapi.responses import StreamingResponse
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -23,39 +22,29 @@ _ssl_ctx.verify_mode = ssl.CERT_NONE
 CHUNK_SIZE = 256 * 1024
 
 
-def _stream_url(url: str, range_header: str):
+def _make_headers(url: str, range_header: str, referrer: str | None = None) -> dict[str, str]:
     headers = {
         "User-Agent": USER_AGENT,
-        "Referer": "https://youtu-chan.com/",
+        "Referer": referrer or "https://allanime.day",
     }
     if range_header:
         headers["Range"] = range_header
-
-    req = UrllibRequest(url, headers=headers)
-    resp = urlopen(req, timeout=60, context=_ssl_ctx)
-
-    while True:
-        chunk = resp.read(CHUNK_SIZE)
-        if not chunk:
-            break
-        yield chunk
+    return headers
 
 
 @router.get("/download")
-async def download_video(url: str):
+async def download_video(
+    url: str,
+    ref: str | None = Query(None, alias="ref"),
+):
     import asyncio
-    from urllib.request import Request as UrllibRequest, urlopen
-    import ssl
 
     ssl_ctx = ssl.create_default_context()
     ssl_ctx.check_hostname = False
     ssl_ctx.verify_mode = ssl.CERT_NONE
 
     def open_stream():
-        headers = {
-            "User-Agent": USER_AGENT,
-            "Referer": "https://youtu-chan.com/",
-        }
+        headers = _make_headers(url, "", ref)
         req = UrllibRequest(url, headers=headers)
         return urlopen(req, timeout=60, context=ssl_ctx)
 
@@ -90,7 +79,11 @@ async def download_video(url: str):
 
 
 @router.get("/proxy")
-async def proxy_video(url: str, request: Request):
+async def proxy_video(
+    url: str,
+    request: Request,
+    ref: str | None = Query(None, alias="ref"),
+):
     import asyncio
 
     range_header = request.headers.get("range", "")
@@ -98,12 +91,7 @@ async def proxy_video(url: str, request: Request):
     loop = asyncio.get_event_loop()
 
     def open_stream():
-        headers = {
-            "User-Agent": USER_AGENT,
-            "Referer": "https://youtu-chan.com/",
-        }
-        if range_header:
-            headers["Range"] = range_header
+        headers = _make_headers(url, range_header, ref)
         req = UrllibRequest(url, headers=headers)
         return urlopen(req, timeout=60, context=_ssl_ctx)
 

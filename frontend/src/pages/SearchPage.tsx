@@ -31,9 +31,9 @@ export default function SearchPage() {
   }, []);
 
   useEffect(() => {
-    const q = searchParams.get("q"), m = searchParams.get("mode") || "sub";
-    if (q) doSearch(q, m);
-  }, [searchParams, doSearch]);
+    const sq = searchParams.get("q"), sm = searchParams.get("mode") || "sub";
+    if (sq) doSearch(sq, sm);
+  }, [searchParams.get("q"), searchParams.get("mode"), doSearch]);
 
   function handleSubmit(e: React.FormEvent) { e.preventDefault(); if (query.trim()) setSearchParams({ q: query.trim(), mode }); }
   function handleModeChange(m: string) { setMode(m); const q = searchParams.get("q"); if (q) setSearchParams({ q, mode: m }); }

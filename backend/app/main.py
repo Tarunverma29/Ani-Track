@@ -1,6 +1,6 @@
-from contextlib import asynccontextmanager
-
+import logging
 import os
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -8,6 +8,8 @@ from fastapi.responses import FileResponse, JSONResponse
 
 from app.config import settings
 from app.database import init_db
+
+logger = logging.getLogger("ani-track")
 from app.auth.routes import router as auth_router
 from app.routers.anime import router as anime_router
 from app.routers.stream import router as stream_router
@@ -17,6 +19,9 @@ from app.routers.library import router as library_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+    if settings.secret_key == "change-me-in-production":
+        logger.warning("Using default SECRET_KEY - change it in production!")
     await init_db()
     yield
 
@@ -51,7 +56,10 @@ async def root():
 async def catch_all(full_path: str):
     if full_path.startswith("api/"):
         return JSONResponse({"detail": "Not found"}, status_code=404)
+    index_path = os.path.join("static", "index.html")
+    if not os.path.isfile(index_path):
+        return JSONResponse({"detail": "Frontend not built"}, status_code=503)
     file_path = os.path.join("static", full_path)
     if os.path.isfile(file_path):
         return FileResponse(file_path)
-    return FileResponse(os.path.join("static", "index.html"), media_type="text/html")
+    return FileResponse(index_path, media_type="text/html")

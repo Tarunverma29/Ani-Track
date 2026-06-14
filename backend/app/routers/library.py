@@ -1,3 +1,4 @@
+import re
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -183,7 +184,12 @@ async def get_stats(
     recent: list[dict] = []
 
     for e in entries:
-        total_min += e.episodes_watched * (int(e.duration.replace("min", "").replace("m", "").strip()) if e.duration else 24)
+        dur_min = 24
+        if e.duration:
+            m = re.search(r"(\d+)", e.duration)
+            if m:
+                dur_min = int(m.group(1))
+        total_min += e.episodes_watched * dur_min
 
         if e.user_score is not None:
             scored.append(e.user_score)

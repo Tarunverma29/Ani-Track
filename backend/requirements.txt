@@ -2,11 +2,9 @@ fastapi
 uvicorn[standard]
 sqlalchemy[asyncio]
 aiosqlite
-httpx
-pyjwt
 bcrypt
 python-multipart
 pydantic
 pydantic-settings
-cryptography
 python-jose[cryptography]
+anipy-api

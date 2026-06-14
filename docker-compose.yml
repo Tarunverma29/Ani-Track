@@ -7,5 +7,5 @@ services:
       - ./data:/data
     environment:
       - DATABASE_URL=sqlite+aiosqlite:////data/ani-track.db
-      - SECRET_KEY=change-me-in-production
-      - ALLOWED_ORIGINS=*
+      - SECRET_KEY=${SECRET_KEY:-change-me-in-production}
+      - ALLOWED_ORIGINS=http://localhost:3000
